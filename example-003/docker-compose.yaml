@@ -1,0 +1,9 @@
+version: '3'
+services:
+  api:
+    image: 'alpine'
+    environment:
+     - NODE_ENV=production
+     - TEST_VAR=${MY_TEST_VAR}
+    # There's no «sleep infinity» in alpine's sleep ;)
+    entrypoint: sleep 1000
