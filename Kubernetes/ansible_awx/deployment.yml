@@ -1,0 +1,190 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ansible-awx
+  labels:
+    app: ansible-awx
+    app-component: ansible-awx-deploy
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: ansible-awx
+        service: django
+        app: ansible-awx
+        app-component: ansible-awx-deploy
+    spec:
+      serviceAccountName: ansible-awx
+      hostname: awx
+      terminationGracePeriodSeconds: 10
+      initContainers:
+        - name: ansible-tower-management
+          image: ansible/awx_task:2.1.2
+          command: ["bash", "/etc/tower/configurator.sh"]
+          volumeMounts:
+            - name: ansible-awx-application-config
+              mountPath: "/etc/tower"
+              readOnly: true
+            - name: ansible-awx-confd
+              mountPath: "/etc/tower/conf.d/"
+              readOnly: true
+      containers:
+        - name: ansible-awx-web
+          image: ansible/awx_web:2.1.2
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8052
+          volumeMounts:
+            - name: ansible-awx-application-config
+              mountPath: "/etc/tower"
+              readOnly: true
+
+            - name: "ansible-awx-confd"
+              mountPath: "/etc/tower/conf.d/"
+              readOnly: true
+          env:
+            - name: DATABASE_USER
+              value: postgre_user
+            - name: DATABASE_NAME
+              value: sampledb
+            - name: DATABASE_HOST
+              value: postgresql
+            - name: DATABASE_PORT
+              value: "5432"
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ansible-awx-secrets
+                  key: pg_password
+            - name: MEMCACHED_HOST
+              value: localhost
+            - name: RABBITMQ_HOST
+              value: localhost
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+        - name: ansible-awx-celery
+          securityContext:
+            privileged: true
+          image: ansible/awx_task:2.1.2
+          command:
+            - /usr/bin/launch_awx_task.sh
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: ansible-awx-application-config
+              mountPath: "/etc/tower"
+              readOnly: true
+            - name: "ansible-awx-confd"
+              mountPath: "/etc/tower/conf.d/"
+              readOnly: true
+          env:
+            - name: ANSIBLE_SSH_CONTROL_PATH
+              value: /dev/shm/cp%%h-%%p-%%r 
+            - name: AWX_SKIP_MIGRATIONS
+              value: "1"
+            - name: DATABASE_USER
+              value: postgre_user
+            - name: DATABASE_NAME
+              value: sampledb
+            - name: DATABASE_HOST
+              value: postgresql
+            - name: DATABASE_PORT
+              value: "5432"
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ansible-awx-secrets
+                  key: pg_password
+            - name: MEMCACHED_HOST
+              value: localhost
+            - name: RABBITMQ_HOST
+              value: localhost
+            - name: AWX_ADMIN_USER
+              value: admin
+            - name: AWX_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ansible-awx-secrets
+                  key: admin_password
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "1500m"
+        - name: ansible-awx-rabbit
+          image: "ansible/awx_rabbitmq:3.7.4"
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              protocol: TCP
+              containerPort: 15672
+            - name: amqp
+              protocol: TCP
+              containerPort: 5672
+          livenessProbe:
+            exec:
+              command: ["rabbitmqctl", "status"]
+            initialDelaySeconds: 30
+            timeoutSeconds: 10
+          readinessProbe:
+            exec:
+              command: ["rabbitmqctl", "status"]
+            initialDelaySeconds: 10
+            timeoutSeconds: 10
+          env:
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: RABBITMQ_USE_LONGNAME
+              value: "true"
+            - name: RABBITMQ_NODENAME
+              value: "rabbit@$(MY_POD_IP)"
+            - name: RABBITMQ_ERLANG_COOKIE
+              valueFrom:
+                secretKeyRef:
+                  name: ansible-awx-secrets
+                  key: rabbitmq_erlang_cookie
+            - name: K8S_SERVICE_NAME
+              value: "rabbitmq"
+          volumeMounts:
+            - name: rabbitmq-config
+              mountPath: /etc/rabbitmq
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "500m"
+        - name: ansible-awx-memcached
+          image: memcached:latest
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+      volumes:
+        - name: ansible-awx-application-config
+          configMap:
+            name: ansible-awx-config
+            items:
+              - key: ansible-awx_settings
+                path: settings.py
+              - key: secret_key
+                path: SECRET_KEY
+              - key: configuration_script
+                path: configurator.sh
+        - name: "ansible-awx-confd"
+          secret:
+            secretName: "ansible-awx-secrets"
+            items:
+              - key: confd_contents
+                path: 'secrets.py'
+
+        - name: rabbitmq-config
+          configMap:
+            name: ansible-awx-rabbitmq-config
+            items:
+            - key: rabbitmq.conf
+              path: rabbitmq.conf
+            - key: enabled_plugins
+              path: enabled_plugins

@@ -1,0 +1,31 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx-init
+  name: nginx-init
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-init
+  template:
+    metadata:
+      labels:
+        app: nginx-init
+    spec:
+      initContainers:
+        # Sequential execution
+        - name: nginx-init-001-check-internet-connection
+          image: busybox
+          command: ["ping", "-c", "2", "google.es"]
+        # kubectl logs nginx-init-... -c nginx-init-001-check-internet-connection
+        - name: nginx-init-002-check-internet-connection
+          image: busybox
+          command: ["wget", "-O", "-", "http://wgetip.com/", "2>", "/dev/null"]
+        # kubectl logs nginx-init-... -c nginx-init-002-check-internet-connection
+      containers:
+      - image: nginx
+        imagePullPolicy: Always
+        name: nginx-init
+        # kubectl logs nginx-init-... -c nginx-init

@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    template.openshift.io/expose-uri: postgres://{.spec.clusterIP}:{.spec.ports[?(.name=="postgresql")].port}
+  name: postgresql
+  labels:
+    app: ansible-awx
+    app-component: ansible-awx-postgresql-service
+spec:
+  ports:
+  - name: postgresql
+    nodePort: 0
+    port: 5432
+    protocol: TCP
+    targetPort: 5432
+  selector:
+    app-component: ansible-awx-postgresql
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}

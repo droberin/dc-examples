@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: Deployment                                          # 1
+metadata:
+  name: nginx-rolling
+  labels:
+    app: nginx-rolling
+spec:
+  replicas: 2                                             # 2
+  minReadySeconds: 15
+  strategy:
+    type: RollingUpdate                                   # 3
+    rollingUpdate: 
+      maxUnavailable: 1                                   # 4
+      maxSurge: 1                                         # 5
+  template:                                               # 6
+    metadata:
+      labels:
+        app: nginx-rolling                                  # 7
+    spec:
+      containers:
+        - image: nginx:1.15.8-alpine
+          imagePullPolicy: Always                         # 8
+          name: nginx-rolling
+          ports:
+          - containerPort: 80
