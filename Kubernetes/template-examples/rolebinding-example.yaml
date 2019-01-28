@@ -1,0 +1,15 @@
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: namespace-admin
+  namespace: $USER_NAME
+subjects:
+- kind: ServiceAccount
+  name: user001
+  namespace: user-namespace
+roleRef:
+  kind: ClusterRole #this must be Role or ClusterRole
+  name: admin # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io
+  
+# kubectl create rolebinding namespace-admin -n user-namesapace --serviceaccount=user001 --clusterrole=admin
