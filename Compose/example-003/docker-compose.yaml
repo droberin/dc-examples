@@ -5,5 +5,7 @@ services:
     environment:
      - NODE_ENV=production
      - TEST_VAR=${MY_TEST_VAR}
+     - LANG
+     - MOST_IMPORTANT_KEY
     # There's no «sleep infinity» in alpine's sleep ;)
     entrypoint: sleep 1000
