@@ -1,0 +1,35 @@
+version: '3'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
+    container_name: elastic
+    environment:
+      discovery.type: single-node
+    volumes:
+      - elastic-data:/usr/share/elasticsearch/data
+  kibana:
+    image: docker.elastic.co/kibana/kibana:6.5.4
+    ports:
+      - 8080:5601
+    environment:
+      ELASTICSEARCH_URL: http://elastic:9200
+  metricbeat-init:
+    image: gradiant/metricbeat
+    command: init
+    environment:
+      ELASTICSEARCH_HOSTS: "[http://elastic:9200]"
+      KIBANA_URL: "http://kibana:5601"
+  metricbeat:
+    image: gradiant/metricbeat:6.5.4
+    volumes:
+      - /proc:/hostfs/proc:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      - /:/hostfs:ro
+    environment:
+      ELASTICSEARCH_HOSTS: "[http://elastic:9200]"
+
+volumes:
+  elastic-data:
+
+
