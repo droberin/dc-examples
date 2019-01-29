@@ -95,6 +95,11 @@ Open `flask_test/entrypoint.py` and replace the `Hello, world. ....` with `Hello
 
 Try!
 
+### Question everything...
+* Is this image really needing an `entrypoint` instead of a `cmd`?
+* Is it alright to put stuff in the default folder? being it `/`?
+* Is it better to run this as default user, `root` in this case, instead of using a different one inside the container?
+
 ### last task... Clean after yourself!!
 Clean the mess you created on docker... if unsure... `prune` the `docker system`.
  
