@@ -16,4 +16,8 @@ run metricbeat to start sending metrics to elasticsearch:
 docker-compose up -d metricbeat
 ```
 
+To stop and delete containers and volumes:
 
+```
+docker-compose down -v
+```

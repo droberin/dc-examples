@@ -3,6 +3,10 @@ services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
     container_name: elastic
+    environment:
+      discovery.type: single-node
+    volumes:
+      - elastic-data:/usr/share/elasticsearch/data
   kibana:
     image: docker.elastic.co/kibana/kibana:6.5.4
     ports:
@@ -24,5 +28,8 @@ services:
       - /:/hostfs:ro
     environment:
       ELASTICSEARCH_HOSTS: "[http://elastic:9200]"
+
+volumes:
+  elastic-data:
 
 
