@@ -2,6 +2,16 @@ references: https://medium.com/google-cloud/a-guide-to-deploy-elasticsearch-clus
             https://github.com/helm/charts/tree/master/stable/elasticsearch
 
 
-elasticsearch-statefulset.yaml
+Download minikube.
 
-Change the {{storage-class}} in  storageClassName
+```
+minikube start
+```
+
+```
+minikube addons enable ingress
+```
+
+```
+kubectl apply -f .
+```
