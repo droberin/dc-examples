@@ -4,6 +4,16 @@ metadata:
   name: test
 spec:
   schedule: "*/5 * * * *"
+  successfulJobsHistoryLimit: 2
+  # successfulJobsHistoryLimit: defaults to 3
+  ## set to 0 to have none of them
+  failedJobsHistoryLimit: 3
+  # failedJobsHistoryLimit: defaults to 1
+  ## set to 0 to have none of them
+  concurrencyPolicy: Allow
+  ## concurrencyPolicy options: Allow (default), Forbid, Replace..
+  suspend: False
+  # Suspend defaults to False! If changed to True, it won't stop running jobs.
   jobTemplate:
     spec:
       template:
