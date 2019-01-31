@@ -259,9 +259,9 @@ Compose yaml file only has one instance set. Yet, it was scaled to two replicas 
 Try:
 * `Stop` services using docker-compose.
 * Check YAML file.
-* `up` services attached to command (meaning **no** `-d`)!
+* `start` services.
 
-How many replicas exist?
+How many instances exist?
 
 #### Scale up again
 From a second terminal, without closing the one with attached outputs:

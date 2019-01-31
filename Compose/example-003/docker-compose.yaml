@@ -7,5 +7,6 @@ services:
      - TEST_VAR=${MY_TEST_VAR}
      - LANG
      - MOST_IMPORTANT_KEY
+     - FORCE
     # There's no «sleep infinity» in alpine's sleep ;)
     entrypoint: sleep 1000
