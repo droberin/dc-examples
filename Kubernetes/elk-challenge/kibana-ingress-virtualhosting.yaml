@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: kibana-ingress-virtualhosting
+spec:
+  rules:
+  - host: kibana.gradiant.org
+    http:
+      paths:
+      - backend:
+          serviceName: kibana
+          servicePort: 5601

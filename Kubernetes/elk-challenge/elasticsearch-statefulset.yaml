@@ -99,4 +99,4 @@ spec:
       # NOTE: You can increase the storage size
       resources:
         requests:
-          storage: 10Gi
+          storage: 5Gi
